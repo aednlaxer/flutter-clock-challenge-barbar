@@ -43,7 +43,7 @@ class ClockPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     print("progress $progress");
-    final digit = _digitsCollection.getDigit(1);
+    final digit = _digitsCollection.getDigit(5);
 
     final double availableBarWidth =
         size.width / (requestedBarCount + _SPACE_COEFFICIENT);
