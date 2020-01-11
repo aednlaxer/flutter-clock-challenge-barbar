@@ -1,31 +1,8 @@
 import 'package:digital_clock/data/digits_collection.dart';
 import 'package:flutter/material.dart';
 
-class ClockFace extends StatelessWidget {
-  final String displayedHours;
-  final String displayedMinutes;
-
-  const ClockFace({
-    Key key,
-    @required this.displayedHours,
-    @required this.displayedMinutes,
-  })  : assert(displayedHours != null && displayedHours.length == 2),
-        assert(displayedMinutes != null && displayedMinutes.length == 2),
-        super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size.infinite,
-      painter: _ClockPainter(
-        displayedHours: displayedHours,
-        displayedMinutes: displayedMinutes,
-      ),
-    );
-  }
-}
-
-class _ClockPainter extends CustomPainter {
+class ClockPainter extends CustomPainter {
+  final double progress;
   final String displayedHours;
   final String displayedMinutes;
 
@@ -55,17 +32,18 @@ class _ClockPainter extends CustomPainter {
 
   final _digitsCollection = DigitsCollection();
 
-  _ClockPainter({
+  ClockPainter({
+    @required this.progress,
     @required this.displayedHours,
     @required this.displayedMinutes,
-  })  : assert(displayedHours != null && displayedHours.length == 2),
+  })  : assert(progress >= 0 && progress <= 1),
+        assert(displayedHours != null && displayedHours.length == 2),
         assert(displayedMinutes != null && displayedMinutes.length == 2);
 
   @override
   void paint(Canvas canvas, Size size) {
-    print("time: $displayedHours $displayedMinutes");
-
-    final digit = _digitsCollection.getDigit(2);
+    print("progress $progress");
+    final digit = _digitsCollection.getDigit(1);
 
     final double availableBarWidth =
         size.width / (requestedBarCount + _SPACE_COEFFICIENT);
@@ -106,8 +84,9 @@ class _ClockPainter extends CustomPainter {
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {
     // TODO: implement shouldRepaint
-    final _ClockPainter oldPainter = oldDelegate as _ClockPainter;
+    final ClockPainter oldPainter = oldDelegate as ClockPainter;
     return oldPainter.displayedHours != this.displayedHours ||
-        oldPainter.displayedMinutes != this.displayedMinutes;
+        oldPainter.displayedMinutes != this.displayedMinutes ||
+        progress != oldPainter.progress;
   }
 }

@@ -39,13 +39,36 @@ class DigitalClock extends StatefulWidget {
   _DigitalClockState createState() => _DigitalClockState();
 }
 
-class _DigitalClockState extends State<DigitalClock> {
+class _DigitalClockState extends State<DigitalClock>
+    with SingleTickerProviderStateMixin {
   DateTime _dateTime = DateTime.now();
   Timer _timer;
+  double _progress = .0;
+
+  AnimationController _animationController;
+  Animation<double> _progressAnimation;
 
   @override
   void initState() {
     super.initState();
+
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300), // todo constant
+      vsync: this,
+    );
+
+    // TODO CurveTween
+    _progressAnimation = Tween(
+      begin: .0,
+      end: 1.0,
+    ).animate(_animationController)
+      ..addListener(() {
+        setState(() {
+          _progress = _progressAnimation?.value ?? .0;
+        });
+      })
+      ..addStatusListener((status) {});
+
     widget.model.addListener(_updateModel);
     _updateTime();
     _updateModel();
@@ -65,6 +88,7 @@ class _DigitalClockState extends State<DigitalClock> {
     _timer?.cancel();
     widget.model.removeListener(_updateModel);
     widget.model.dispose();
+    _animationController?.dispose();
     super.dispose();
   }
 
@@ -88,9 +112,13 @@ class _DigitalClockState extends State<DigitalClock> {
       // Update once per second, but make sure to do it at the beginning of each
       // new second, so that the clock is accurate.
       _timer = Timer(
-        Duration(seconds: 1) - Duration(milliseconds: _dateTime.millisecond),
+        Duration(seconds: 5) - Duration(milliseconds: _dateTime.millisecond),
         _updateTime,
       );
+
+      // Run digit change animation
+      _animationController.reset();
+      _animationController.forward();
     });
   }
 
@@ -106,9 +134,13 @@ class _DigitalClockState extends State<DigitalClock> {
     return Container(
       color: colors[_Element.background],
       child: Center(
-        child: ClockFace(
-          displayedHours: hour,
-          displayedMinutes: minute,
+        child: CustomPaint(
+          size: Size.infinite,
+          painter: ClockPainter(
+            progress: _progress,
+            displayedHours: hour,
+            displayedMinutes: minute,
+          ),
         ),
       ),
     );
