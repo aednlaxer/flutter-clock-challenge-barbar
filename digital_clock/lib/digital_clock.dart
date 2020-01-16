@@ -1,31 +1,14 @@
 import 'dart:async';
 
 import 'package:digital_clock/painter/clock_painter.dart';
+import 'package:digital_clock/theme/theme.dart';
 import 'package:flutter_clock_helper/model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'const/const.dart';
 
-enum _Element {
-  background,
-  text,
-  shadow,
-}
-
 enum _DigitsPosition { HourOld, MinuteOld, HourNew, MinuteNew }
-
-final _lightTheme = {
-  _Element.background: Color(0xFF81B3FE),
-  _Element.text: Colors.white,
-  _Element.shadow: Colors.black,
-};
-
-final _darkTheme = {
-  _Element.background: Colors.black,
-  _Element.text: Colors.white,
-  _Element.shadow: Color(0xFF174EA6),
-};
 
 class DigitalClock extends StatefulWidget {
   const DigitalClock(this.model);
@@ -125,25 +108,21 @@ class _DigitalClockState extends State<DigitalClock>
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).brightness == Brightness.light
-        ? _lightTheme
-        : _darkTheme;
+    final theme = Theme.of(context).brightness == Brightness.light
+        ? LightTheme
+        : DarkTheme;
     final hoursMinutes =
         _getDisplayedAndPreviousTime(widget.model.is24HourFormat);
 
-    return Container(
-      color: colors[_Element.background],
-      child: Center(
-        child: CustomPaint(
-          size: Size.infinite,
-          painter: ClockPainter(
-            progress: _progress,
-            currentHour: hoursMinutes[_DigitsPosition.HourOld],
-            currentMinute: hoursMinutes[_DigitsPosition.MinuteOld],
-            newHour: hoursMinutes[_DigitsPosition.HourNew],
-            newMinute: hoursMinutes[_DigitsPosition.MinuteNew],
-          ),
-        ),
+    return CustomPaint(
+      size: Size.infinite,
+      painter: ClockPainter(
+        theme: theme,
+        progress: _progress,
+        currentHour: hoursMinutes[_DigitsPosition.HourOld],
+        currentMinute: hoursMinutes[_DigitsPosition.MinuteOld],
+        newHour: hoursMinutes[_DigitsPosition.HourNew],
+        newMinute: hoursMinutes[_DigitsPosition.MinuteNew],
       ),
     );
   }

@@ -1,8 +1,10 @@
 import 'package:digital_clock/const/const.dart';
 import 'package:digital_clock/data/digits_collection.dart';
+import 'package:digital_clock/theme/theme.dart';
 import 'package:flutter/material.dart';
 
 class ClockPainter extends CustomPainter {
+  final ClockTheme theme;
   final double progress;
   final String currentHour;
   final String currentMinute;
@@ -12,11 +14,12 @@ class ClockPainter extends CustomPainter {
   final _digitsCollection = DigitsCollection();
 
   final _barPaint = Paint()
-    ..color = Colors.black
     ..strokeWidth = 0
     ..style = PaintingStyle.fill;
 
   ClockPainter({
+    Colors foo,
+    @required this.theme,
     @required this.progress,
     @required this.currentHour,
     @required this.currentMinute,
@@ -37,6 +40,11 @@ class ClockPainter extends CustomPainter {
       newMinute,
       progress,
     );
+
+    _barPaint.color = theme.barColor;
+
+    // Draw background
+    canvas.drawColor(theme.backgroundColor, BlendMode.color);
 
     final double availableBarWidth =
         size.width / (Const.TOTAL_BAR_NUMBER + Const.SPACE_COEFFICIENT);
