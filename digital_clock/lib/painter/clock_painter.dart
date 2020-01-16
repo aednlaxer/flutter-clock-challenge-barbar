@@ -61,8 +61,19 @@ class ClockPainter extends CustomPainter {
           final barBottom = item.endY == 1.0
               ? size.height
               : item.endY * availableCanvasHeight + topBottomPaddingPx;
-          final rect = Rect.fromLTRB(barXStart, barTop, barXEnd, barBottom);
-          canvas.drawRect(rect, _barPaint);
+          final topRadius = _getTopRadius(item.startY);
+          final bottomRadius = _getBottomRadius(item.endY);
+          final rect = RRect.fromLTRBAndCorners(
+            barXStart,
+            barTop,
+            barXEnd,
+            barBottom,
+            topLeft: topRadius,
+            topRight: topRadius,
+            bottomLeft: bottomRadius,
+            bottomRight: bottomRadius,
+          );
+          canvas.drawRRect(rect, _barPaint);
         });
       } else {
         // Draw top to bottom bar
@@ -72,6 +83,20 @@ class ClockPainter extends CustomPainter {
 
       // todo check bounds when drawing
     }
+  }
+
+  Radius _getTopRadius(double startY) {
+    if (startY > .0)
+      return Radius.circular(Const.BAR_RADIUS);
+    else
+      return Radius.zero;
+  }
+
+  Radius _getBottomRadius(double endY) {
+    if (endY < 1.0)
+      return Radius.circular(Const.BAR_RADIUS);
+    else
+      return Radius.zero;
   }
 
   @override
