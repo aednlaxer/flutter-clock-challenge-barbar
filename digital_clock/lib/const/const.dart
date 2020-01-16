@@ -7,7 +7,7 @@ class Const {
   static const int PADDING_BAR_COUNT = 4;
 
   // How much bar takes of available bar+space width, (0.0; 1.0]
-  static const double BAR_COEFFICIENT = 0.4;
+  static const double BAR_COEFFICIENT = 0.35;
 
   // How much space takes of available bar+space width
   static const double SPACE_COEFFICIENT = 1 - BAR_COEFFICIENT;

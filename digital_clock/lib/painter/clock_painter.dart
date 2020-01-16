@@ -44,7 +44,7 @@ class ClockPainter extends CustomPainter {
     _barPaint.color = theme.barColor;
 
     // Draw background
-    canvas.drawColor(theme.backgroundColor, BlendMode.color);
+    canvas.drawColor(theme.backgroundColor, BlendMode.src);
 
     final double availableBarWidth =
         size.width / (Const.TOTAL_BAR_NUMBER + Const.SPACE_COEFFICIENT);
