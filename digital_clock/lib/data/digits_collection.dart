@@ -1,8 +1,337 @@
+import 'package:digital_clock/const/const.dart';
 import 'package:digital_clock/model/display_bar.dart';
 
-// TODO rename
-// TODO enum?
 class DigitsCollection {
+  List<DisplayBar> getTime(
+    String oldHour,
+    String newHour,
+    String oldMinute,
+    String newMinute,
+    double progress,
+  ) {
+    assert(oldHour != null && oldHour.length == 2);
+    assert(newHour != null && newHour.length == 2);
+    assert(oldMinute != null && oldMinute.length == 2);
+    assert(newMinute != null && newMinute.length == 2);
+    assert(progress >= 0 && progress <= 1);
+
+    final oldHour1 = int.parse(oldHour.substring(0, 1));
+    final oldHour2 = int.parse(oldHour.substring(1, 2));
+    final newHour1 = int.parse(newHour.substring(0, 1));
+    final newHour2 = int.parse(newHour.substring(1, 2));
+
+    final oldMinute1 = int.parse(oldMinute.substring(0, 1));
+    final oldMinute2 = int.parse(oldMinute.substring(1, 2));
+    final newMinute1 = int.parse(newMinute.substring(0, 1));
+    final newMinute2 = int.parse(newMinute.substring(1, 2));
+
+    // Get transitions for every digit
+    final hourFirst =
+        _getDigitTransition(_getDigit(oldHour1), _getDigit(newHour1), progress);
+    final hourSecond =
+        _getDigitTransition(_getDigit(oldHour2), _getDigit(newHour2), progress);
+    final minuteFirst = _getDigitTransition(
+        _getDigit(oldMinute1), _getDigit(newMinute1), progress);
+    final minuteSecond = _getDigitTransition(
+        _getDigit(oldMinute2), _getDigit(newMinute2), progress);
+
+    // Build a list where each digit's bar has location which is relative to
+    // the start of clock face canvas (counted in bars 0 to N)
+    return List<DisplayBar>()
+      ..addAll(
+        hourFirst
+            .map((i) => i.copy(barNumber: i.barNumber + Const.DIGIT_1_INDEX))
+            .toList(),
+      )
+      ..addAll(
+        hourSecond
+            .map((i) => i.copy(barNumber: i.barNumber + Const.DIGIT_2_INDEX))
+            .toList(),
+      )
+      ..addAll(
+        minuteFirst
+            .map((i) => i.copy(barNumber: i.barNumber + Const.DIGIT_3_INDEX))
+            .toList(),
+      )
+      ..addAll(
+        minuteSecond
+            .map((i) => i.copy(barNumber: i.barNumber + Const.DIGIT_4_INDEX))
+            .toList(),
+      );
+  }
+
+  List<DisplayBar> _getDigit(int digit) {
+    assert(digit != null);
+    assert(digit >= 0 && digit <= 9);
+
+    switch (digit) {
+      case 0:
+        return _digit_0;
+      case 1:
+        return _digit_1;
+      case 2:
+        return _digit_2;
+      case 3:
+        return _digit_3;
+      case 4:
+        return _digit_4;
+      case 5:
+        return _digit_5;
+      case 6:
+        return _digit_6;
+      case 7:
+        return _digit_7;
+      case 8:
+        return _digit_8;
+      case 9:
+        return _digit_9;
+      default:
+        throw ArgumentError("Unknown digit $digit");
+    }
+  }
+
+  List<DisplayBar> _getDigitTransition(
+    List<DisplayBar> digitFrom,
+    List<DisplayBar> digitTo,
+    double progress,
+  ) {
+    assert(digitFrom != null && digitFrom.isNotEmpty);
+    assert(digitTo != null && digitTo.isNotEmpty);
+    assert(progress >= 0 && progress <= 1);
+
+    if (progress == .0) return digitFrom;
+    if (progress == 1.0) return digitTo;
+
+    final result = List<DisplayBar>();
+
+    // TODO 6 to constants
+    for (int bar = 0; bar < 6; bar++) {
+      final barsPositionFrom = digitFrom.where((it) => it.barNumber == bar);
+      final barsPositionTo = digitTo.where((it) => it.barNumber == bar);
+
+      result
+        ..add(_getTopBar(bar, progress, barsPositionFrom, barsPositionTo))
+        ..add(_getBottomBar(bar, progress, barsPositionFrom, barsPositionTo));
+
+      final middleBarsOld =
+          barsPositionFrom.where((it) => it.startY > 0 && it.endY < 1);
+      final middleBarsNew =
+          barsPositionTo.where((it) => it.startY > 0 && it.endY < 1);
+      final middleBarsLengthOld = middleBarsOld.length;
+      final middleBarsLengthNew = middleBarsNew.length;
+
+      // Nothing to transform
+      if (middleBarsLengthOld == 0 && middleBarsLengthNew == 0) continue;
+
+      if (middleBarsLengthOld == 0 && middleBarsLengthNew == 1) {
+        result.add(
+          _createMiddleBarTransition(
+            bar,
+            progress,
+            _createBarFrom(middleBarsNew.first),
+            middleBarsNew.first,
+          ),
+        );
+      } else if (middleBarsLengthOld == 1 && middleBarsLengthNew == 0) {
+        result.add(
+          _createMiddleBarTransition(
+            bar,
+            progress,
+            middleBarsOld.first,
+            _createBarFrom(middleBarsOld.first),
+          ),
+        );
+      } else if (middleBarsLengthOld == 1 && middleBarsLengthNew == 1) {
+        result.add(
+          _createMiddleBarTransition(
+            bar,
+            progress,
+            middleBarsOld.first,
+            middleBarsNew.first,
+          ),
+        );
+      } else if (middleBarsLengthOld == 1 && middleBarsLengthNew == 2) {
+        result.add(
+          _createMiddleBarTransition(
+            bar,
+            progress,
+            middleBarsOld.first,
+            middleBarsNew.elementAt(0),
+          ),
+        );
+        result.add(
+          _createMiddleBarTransition(
+            bar,
+            progress,
+            middleBarsOld.first,
+            middleBarsNew.elementAt(1),
+          ),
+        );
+      } else if (middleBarsLengthOld == 2 && middleBarsLengthNew == 1) {
+        final newBar = middleBarsNew.first;
+        final oldBarsSorted = middleBarsOld.toList()..sort(_compareBars);
+        result.add(
+          _createMiddleBarTransition(
+            bar,
+            progress,
+            oldBarsSorted[0],
+            _createBarFrom(newBar, startY: newBar.startY),
+          ),
+        );
+        result.add(
+          _createMiddleBarTransition(
+            bar,
+            progress,
+            oldBarsSorted[1],
+            _createBarFrom(newBar, endY: newBar.endY),
+          ),
+        );
+      } else if (middleBarsLengthOld == 2 && middleBarsLengthNew == 2) {
+        final oldBarsSorted = middleBarsOld.toList()..sort(_compareBars);
+        final newBarsSorted = middleBarsNew.toList()..sort(_compareBars);
+        result.add(
+          _createMiddleBarTransition(
+            bar,
+            progress,
+            oldBarsSorted[0],
+            newBarsSorted[0],
+          ),
+        );
+        result.add(
+          _createMiddleBarTransition(
+            bar,
+            progress,
+            oldBarsSorted[1],
+            newBarsSorted[1],
+          ),
+        );
+      } else if (middleBarsLengthOld == 0 && middleBarsLengthNew == 2) {
+        final newBarSorted = middleBarsNew.toList()..sort(_compareBars);
+        result.add(
+          _createMiddleBarTransition(
+            bar,
+            progress,
+            _createBarFrom(newBarSorted[0]),
+            newBarSorted[0],
+          ),
+        );
+        result.add(
+          _createMiddleBarTransition(
+            bar,
+            progress,
+            _createBarFrom(newBarSorted[1]),
+            newBarSorted[1],
+          ),
+        );
+      } else if (middleBarsLengthOld == 2 && middleBarsLengthNew == 0) {
+        final oldBarsSorted = middleBarsOld.toList()..sort(_compareBars);
+        result.add(
+          _createMiddleBarTransition(
+            bar,
+            progress,
+            oldBarsSorted[0],
+            _createBarFrom(oldBarsSorted[0]),
+          ),
+        );
+        result.add(
+          _createMiddleBarTransition(
+            bar,
+            progress,
+            oldBarsSorted[1],
+            _createBarFrom(oldBarsSorted[1]),
+          ),
+        );
+      }
+    }
+
+    return result;
+  }
+
+  int _compareBars(DisplayBar one, DisplayBar two) =>
+      one.startY.compareTo(two.startY);
+
+  DisplayBar _createBarFrom(DisplayBar fromBar, {double startY, double endY}) {
+    final barCenter = (fromBar.startY + fromBar.endY) / 2;
+    return DisplayBar(
+      barNumber: fromBar.barNumber,
+      startY: startY ?? barCenter,
+      endY: endY ?? barCenter,
+    );
+  }
+
+  DisplayBar _createMiddleBarTransition(
+    int barNumber,
+    double progress,
+    DisplayBar from,
+    DisplayBar to,
+  ) {
+    double top;
+    if (from.startY < to.startY) {
+      top = to.startY - (to.startY - from.startY) * (1 - progress);
+    } else {
+      top = from.startY - (from.startY - to.startY) * progress;
+    }
+
+    double bottom;
+    if (from.endY < to.endY) {
+      bottom = from.endY + (to.endY - from.endY) * progress;
+    } else {
+      bottom = from.endY - (from.endY - to.endY) * progress;
+    }
+
+    return DisplayBar(
+      barNumber: barNumber,
+      startY: top,
+      endY: bottom,
+    );
+  }
+
+  DisplayBar _getTopBar(
+    int barNumber,
+    double progress,
+    Iterable<DisplayBar> digitFromPosition,
+    Iterable<DisplayBar> digitToPosition,
+  ) {
+    final topBarOld = digitFromPosition.firstWhere((it) => it.startY == 0);
+    final topBarNew = digitToPosition.firstWhere((it) => it.startY == 0);
+
+    double diff;
+    if (topBarOld.endY > topBarNew.endY) {
+      diff = -1 * (topBarOld.endY - topBarNew.endY);
+    } else {
+      diff = topBarNew.endY - topBarOld.endY;
+    }
+
+    return DisplayBar(
+      barNumber: barNumber,
+      startY: 0,
+      endY: topBarOld.endY + diff * progress,
+    );
+  }
+
+  DisplayBar _getBottomBar(
+    int barNumber,
+    double progress,
+    Iterable<DisplayBar> digitFromPosition,
+    Iterable<DisplayBar> digitToPosition,
+  ) {
+    final bottomBarOld = digitFromPosition.firstWhere((it) => it.endY == 1);
+    final bottomBarNew = digitToPosition.firstWhere((it) => it.endY == 1);
+
+    double diff2;
+    if (bottomBarOld.startY > bottomBarNew.startY) {
+      diff2 = -1 * (bottomBarOld.startY - bottomBarNew.startY);
+    } else {
+      diff2 = bottomBarNew.startY - bottomBarOld.startY;
+    }
+
+    return DisplayBar(
+      barNumber: barNumber,
+      startY: bottomBarOld.startY + diff2 * progress,
+      endY: 1,
+    );
+  }
+
   // These lists are generated from SVG using digits-generator/generator.py
   final List<DisplayBar> _digit_1 = [
     DisplayBar(barNumber: 0, startY: 0, endY: 25 / 128),
@@ -198,155 +527,4 @@ class DigitsCollection {
     DisplayBar(barNumber: 5, startY: 0, endY: 28 / 128),
     DisplayBar(barNumber: 5, startY: 100 / 128, endY: (100 + 28) / 128),
   ];
-
-//  final List<DisplayBar> _zero = [
-//    //
-//    // <rect x="33" width="4" height="25" rx="2" fill="#C20000"/>
-//    DisplayBar(barNumber: 0, startY: 0, endY: 116 / 300),
-//    DisplayBar(barNumber: 0, startY: 188 / 300, endY: 1),
-//    //
-//    DisplayBar(barNumber: 1, startY: 0, endY: 102 / 300),
-//    DisplayBar(barNumber: 1, startY: 138 / 300, endY: (138 + 30) / 300),
-//    DisplayBar(barNumber: 1, startY: 202 / 300, endY: 1),
-//    //
-//    DisplayBar(barNumber: 2, startY: 0, endY: 96 / 300),
-//    DisplayBar(barNumber: 2, startY: 126 / 300, endY: (126 + 54) / 300),
-//    DisplayBar(barNumber: 2, startY: 112 / 300, endY: 1),
-//    //
-//    DisplayBar(barNumber: 3, startY: 0, endY: 96 / 300),
-//    DisplayBar(barNumber: 3, startY: 126 / 300, endY: (126 + 54) / 300),
-//    DisplayBar(barNumber: 3, startY: 208 / 300, endY: 1),
-//    //
-//    DisplayBar(barNumber: 4, startY: 0, endY: 102 / 300),
-//    DisplayBar(barNumber: 4, startY: 137 / 300, endY: (137 + 30) / 300),
-//    DisplayBar(barNumber: 4, startY: 100 / 300, endY: 1),
-//    //
-//    DisplayBar(barNumber: 5, startY: 0, endY: 116 / 300),
-//    DisplayBar(barNumber: 5, startY: 188 / 300, endY: 1),
-//  ];
-//
-//  final List<DisplayBar> _one = [
-//    DisplayBar(barNumber: 0, startY: 0, endY: 103 / 300),
-//    DisplayBar(barNumber: 0, startY: 127 / 300, endY: 1),
-//    //
-//    DisplayBar(barNumber: 1, startY: 0, endY: 98 / 300),
-//    DisplayBar(barNumber: 1, startY: 124 / 300, endY: 1),
-//    //
-//    DisplayBar(barNumber: 2, startY: 0, endY: 94 / 300),
-//    DisplayBar(barNumber: 2, startY: 208 / 300, endY: 1),
-//    //
-//    DisplayBar(barNumber: 3, startY: 0, endY: 90 / 300),
-//    DisplayBar(barNumber: 3, startY: 208 / 300, endY: 1),
-//    //
-//    DisplayBar(barNumber: 4, startY: 0, endY: 1),
-//    //
-//    DisplayBar(barNumber: 5, startY: 0, endY: 1),
-//  ];
-//
-//  final List<DisplayBar> _two = [
-//    DisplayBar(barNumber: 0, startY: 0, endY: 113 / 300),
-//    DisplayBar(barNumber: 0, startY: 129 / 300, endY: (129 + 52) / 300),
-//    DisplayBar(barNumber: 0, startY: 208 / 300, endY: 1),
-//    //
-//    DisplayBar(barNumber: 1, startY: 0, endY: 103 / 300),
-//    DisplayBar(barNumber: 1, startY: 133 / 300, endY: (133 + 36) / 300),
-//    DisplayBar(barNumber: 1, startY: 208 / 300, endY: 1),
-//    //
-//    DisplayBar(barNumber: 2, startY: 0, endY: 98 / 300),
-//    DisplayBar(barNumber: 2, startY: 126 / 300, endY: (126 + 35) / 300),
-//    DisplayBar(barNumber: 2, startY: 208 / 300, endY: 1),
-//    //
-//    DisplayBar(barNumber: 3, startY: 0, endY: 98 / 300),
-//    DisplayBar(barNumber: 3, startY: 122 / 300, endY: (122 + 21) / 300),
-//    DisplayBar(barNumber: 3, startY: 208 / 300, endY: 1),
-//    //
-//    DisplayBar(barNumber: 4, startY: 0, endY: 103 / 300),
-//    DisplayBar(barNumber: 4, startY: 165 / 300, endY: (165 + 16) / 300),
-//    DisplayBar(barNumber: 4, startY: 208 / 300, endY: 1),
-//    //
-//    DisplayBar(barNumber: 5, startY: 0, endY: 113 / 300),
-//    DisplayBar(barNumber: 5, startY: 148 / 300, endY: (148 + 33) / 300),
-//    DisplayBar(barNumber: 5, startY: 208 / 300, endY: 1),
-//  ];
-//
-//  final List<DisplayBar> _three = [
-//    DisplayBar(barNumber: 0, startY: 0, endY: 106 / 300),
-//    DisplayBar(barNumber: 0, startY: 122 / 300, endY: (122 + 53) / 300),
-//    DisplayBar(barNumber: 0, startY: 200 / 300, endY: 1),
-//    //
-//    DisplayBar(barNumber: 1, startY: 0, endY: 100 / 300),
-//    DisplayBar(barNumber: 1, startY: 128 / 300, endY: (128 + 47) / 300),
-//    DisplayBar(barNumber: 1, startY: 206 / 300, endY: 1),
-//    //
-//    DisplayBar(barNumber: 2, startY: 0, endY:),
-//    DisplayBar(barNumber: 2, startY:, endY:),
-//    DisplayBar(barNumber: 2, startY:, endY:),
-//    DisplayBar(barNumber: 2, startY:, endY: 1),
-//    //
-//    DisplayBar(barNumber: 3, startY:, endY:),
-//    DisplayBar(barNumber: 3, startY:, endY:),
-//    DisplayBar(barNumber: 3, startY:, endY:),
-//    DisplayBar(barNumber: 3, startY:, endY: 1),
-//    //
-//    DisplayBar(barNumber: 4, startY: 0, endY:),
-//    DisplayBar(barNumber: 4, startY:, endY: 1),
-//    //
-//    DisplayBar(barNumber: 5, startY: 1, endY:),
-//    DisplayBar(barNumber: 5, startY:, endY:),
-//    DisplayBar(barNumber: 5, startY:, endY: 1),
-//  ];
-//  final List<DisplayBar> _four = [];
-//  final List<DisplayBar> _five = [];
-//  final List<DisplayBar> _six = [];
-//  final List<DisplayBar> _seven = [];
-//  final List<DisplayBar> _eight = [];
-//  final List<DisplayBar> _nine = [];
-
-  List<DisplayBar> getDigit(int digit) {
-    assert(digit != null);
-    assert(digit >= 0 && digit <= 9);
-
-    switch (digit) {
-      case 0:
-        return _digit_0;
-      case 1:
-        return _digit_1;
-      case 2:
-        return _digit_2;
-      case 3:
-        return _digit_3;
-      case 4:
-        return _digit_4;
-      case 5:
-        return _digit_5;
-      case 6:
-        return _digit_6;
-      case 7:
-        return _digit_7;
-      case 8:
-        return _digit_8;
-      case 9:
-        return _digit_9;
-    }
-  }
-
-  List<DisplayBar> getDigitTransition(
-      List<DisplayBar> digitFrom, List<DisplayBar> digitTo, double progress) {
-    assert(digitFrom != null && digitFrom.isNotEmpty);
-    assert(digitTo != null && digitTo.isNotEmpty);
-    assert(progress >= 0 && progress <= 1);
-
-    if (progress == 0) return digitFrom;
-    if (progress == 1) return digitTo;
-
-    for (int bar = 0; bar < 6; bar++) {
-      final digitFromPosition = digitFrom.where((it) => it.barNumber == bar);
-      final digitToPosition = digitFrom.where((it) => it.barNumber == bar);
-
-      // Top bar to top bar
-      // Bottom bar to bottom bar
-      // One middle bar to middle bar or disappear
-      // Two middle bars to 2 bars, 1 bar or disappear
-    }
-  }
 }

@@ -1,19 +1,19 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 import 'dart:async';
 
-import 'package:digital_clock/widget/clock_face.dart';
+import 'package:digital_clock/painter/clock_painter.dart';
 import 'package:flutter_clock_helper/model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
+import 'const/const.dart';
 
 enum _Element {
   background,
   text,
   shadow,
 }
+
+enum _DigitsPosition { HourOld, MinuteOld, HourNew, MinuteNew }
 
 final _lightTheme = {
   _Element.background: Color(0xFF81B3FE),
@@ -27,9 +27,6 @@ final _darkTheme = {
   _Element.shadow: Color(0xFF174EA6),
 };
 
-/// A basic digital clock.
-///
-/// You can do better than this!
 class DigitalClock extends StatefulWidget {
   const DigitalClock(this.model);
 
@@ -42,6 +39,7 @@ class DigitalClock extends StatefulWidget {
 class _DigitalClockState extends State<DigitalClock>
     with SingleTickerProviderStateMixin {
   DateTime _dateTime = DateTime.now();
+  DateTime _previousDateTime = DateTime.now();
   Timer _timer;
   double _progress = .0;
 
@@ -53,7 +51,9 @@ class _DigitalClockState extends State<DigitalClock>
     super.initState();
 
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 300), // todo constant
+      duration: const Duration(
+        milliseconds: Const.DIGIT_CHANGE_ANIMATION_DURATION,
+      ),
       vsync: this,
     );
 
@@ -100,6 +100,7 @@ class _DigitalClockState extends State<DigitalClock>
 
   void _updateTime() {
     setState(() {
+      _previousDateTime = _dateTime;
       _dateTime = DateTime.now();
       // Update once per minute. If you want to update every second, use the
       // following code.
@@ -112,7 +113,7 @@ class _DigitalClockState extends State<DigitalClock>
       // Update once per second, but make sure to do it at the beginning of each
       // new second, so that the clock is accurate.
       _timer = Timer(
-        Duration(seconds: 5) - Duration(milliseconds: _dateTime.millisecond),
+        Duration(seconds: 1) - Duration(milliseconds: _dateTime.millisecond),
         _updateTime,
       );
 
@@ -127,9 +128,8 @@ class _DigitalClockState extends State<DigitalClock>
     final colors = Theme.of(context).brightness == Brightness.light
         ? _lightTheme
         : _darkTheme;
-    final hour =
-        DateFormat(widget.model.is24HourFormat ? 'HH' : 'hh').format(_dateTime);
-    final minute = DateFormat('ss').format(_dateTime); // FIXME mm
+    final hoursMinutes =
+        _getDisplayedAndPreviousTime(widget.model.is24HourFormat);
 
     return Container(
       color: colors[_Element.background],
@@ -138,11 +138,24 @@ class _DigitalClockState extends State<DigitalClock>
           size: Size.infinite,
           painter: ClockPainter(
             progress: _progress,
-            displayedHours: hour,
-            displayedMinutes: minute,
+            currentHour: hoursMinutes[_DigitsPosition.HourOld],
+            currentMinute: hoursMinutes[_DigitsPosition.MinuteOld],
+            newHour: hoursMinutes[_DigitsPosition.HourNew],
+            newMinute: hoursMinutes[_DigitsPosition.MinuteNew],
           ),
         ),
       ),
     );
+  }
+
+  Map<_DigitsPosition, String> _getDisplayedAndPreviousTime(bool is24hFormat) {
+    final hourFormat = DateFormat(is24hFormat ? 'HH' : 'hh');
+    final minuteFormat = DateFormat('ss'); // FIXME ss to mm
+    return {
+      _DigitsPosition.HourOld: hourFormat.format(_previousDateTime),
+      _DigitsPosition.MinuteOld: minuteFormat.format(_previousDateTime),
+      _DigitsPosition.HourNew: hourFormat.format(_dateTime),
+      _DigitsPosition.MinuteNew: minuteFormat.format(_dateTime),
+    };
   }
 }
