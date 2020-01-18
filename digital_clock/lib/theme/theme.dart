@@ -11,11 +11,11 @@ class ClockTheme {
 }
 
 const LightTheme = const ClockTheme(
-  backgroundColor: Colors.white,
-  barColor: Colors.black,
+  backgroundColor: const Color(0xFF6FBEEA),
+  barColor: const Color(0xFF090042),
 );
 
 const DarkTheme = const ClockTheme(
-  backgroundColor: Colors.black,
-  barColor: Colors.white,
+  backgroundColor: const Color(0xFF090042),
+  barColor: const Color(0xFF00C2B7),
 );

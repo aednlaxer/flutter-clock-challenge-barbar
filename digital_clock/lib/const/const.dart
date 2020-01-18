@@ -15,10 +15,15 @@ class Const {
 
   // Bar + space is one entity. How much one bar takes from the available space.
   // Relative value, must be within (0.0; 1.0] bounds
-  static const double AVAILABLE_BAR_WIDTH_REL = 0.35;
+  static const double AVAILABLE_BAR_WIDTH_REL = 0.4;
 
   // How much space takes of available bar+space width
   static const double AVAILABLE_SPACE_WIDTH_REL = 1 - AVAILABLE_BAR_WIDTH_REL;
+
+  // Offset from top and bottom of the clock face.
+  // Relative to height, must be within [0.0; 1.0] bounds.
+  // This helps to "squeeze" digits vertically
+  static const double DIGIT_PADDING_TOP_BOTTOM = 0.25;
 
   // Clock face width in bars - total number of displayed bars
   static const int TOTAL_BAR_NUMBER = PADDING_BAR_COUNT +
@@ -49,10 +54,6 @@ class Const {
       DIGIT_SEPARATOR_BAR_COUNT;
   static const int DIGIT_4_INDEX =
       DIGIT_3_INDEX + BARS_FOR_ONE_DIGIT + DIGIT_SEPARATOR_BAR_COUNT;
-
-  // Offset from top and bottom of the clock face.
-  // Relative to height, must be within [0.0; 1.0] bounds
-  static const double DIGIT_PADDING_TOP_BOTTOM = 0.25;
 
   // Duration of digit change animation
   static const int DIGIT_CHANGE_ANIMATION_DURATION = 300;
