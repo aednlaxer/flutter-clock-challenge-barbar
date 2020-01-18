@@ -23,7 +23,7 @@ class Const {
   // Offset from top and bottom of the clock face.
   // Relative to height, must be within [0.0; 1.0] bounds.
   // This helps to "squeeze" digits vertically
-  static const double DIGIT_PADDING_TOP_BOTTOM = 0.25;
+  static const double DIGIT_PADDING_TOP_BOTTOM = 0.28;
 
   // Clock face width in bars - total number of displayed bars
   static const int TOTAL_BAR_NUMBER = PADDING_BAR_COUNT +
