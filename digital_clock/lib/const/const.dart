@@ -44,7 +44,7 @@ class Const {
   // Relative
   static const double DIGIT_PADDING_TOP_BOTTOM = 0.25;
 
-  static const int DIGIT_CHANGE_ANIMATION_DURATION = 200;
+  static const int DIGIT_CHANGE_ANIMATION_DURATION = 300;
 
   static const double BAR_RADIUS = 4.0;
 }

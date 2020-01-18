@@ -40,17 +40,15 @@ class _DigitalClockState extends State<DigitalClock>
       vsync: this,
     );
 
-    // TODO CurveTween
-    _progressAnimation = Tween(
-      begin: .0,
-      end: 1.0,
-    ).animate(_animationController)
-      ..addListener(() {
-        setState(() {
-          _progress = _progressAnimation?.value ?? .0;
-        });
-      })
-      ..addStatusListener((status) {});
+    _progressAnimation = Tween(begin: 0.0, end: 1.0)
+        .chain(CurveTween(curve: Curves.decelerate))
+        .animate(_animationController)
+          ..addListener(() {
+            setState(() {
+              _progress = _progressAnimation?.value ?? .0;
+            });
+          })
+          ..addStatusListener((status) {});
 
     widget.model.addListener(_updateModel);
     _updateTime();
@@ -88,9 +86,9 @@ class _DigitalClockState extends State<DigitalClock>
       // Update once per minute. If you want to update every second, use the
       // following code.
 //      _timer = Timer(
-//        Duration(minutes: 1) -
-//            Duration(seconds: _dateTime.second) -
-//            Duration(milliseconds: _dateTime.millisecond),
+//        const Duration(minutes: 1) -
+//            const Duration(seconds: _dateTime.second) -
+//            const Duration(milliseconds: _dateTime.millisecond),
 //        _updateTime,
 //      );
       // Update once per second, but make sure to do it at the beginning of each
