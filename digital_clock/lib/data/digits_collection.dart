@@ -2,6 +2,9 @@ import 'package:digital_clock/const/const.dart';
 import 'package:digital_clock/model/display_bar.dart';
 
 class DigitsCollection {
+  /// Get bars transformation for given old time, new time and progress.
+  /// Items in the returned result will have proper offset from start
+  /// Returned list will not contain separator and padding bars
   List<DisplayBar> getTime(
     String oldHour,
     String newHour,
@@ -104,7 +107,7 @@ class DigitsCollection {
     assert(digitTo != null && digitTo.isNotEmpty);
     assert(progress >= 0 && progress <= 1);
 
-    if (progress == .0) return digitFrom;
+    if (progress == 0.0) return digitFrom;
     if (progress == 1.0) return digitTo;
 
     final result = List<DisplayBar>();
@@ -113,10 +116,16 @@ class DigitsCollection {
       final barsPositionFrom = digitFrom.where((it) => it.barNumber == bar);
       final barsPositionTo = digitTo.where((it) => it.barNumber == bar);
 
+      // Calculate top and bottom bars
+      final topBarOld = barsPositionFrom.firstWhere((it) => it.startY == 0);
+      final topBarNew = barsPositionTo.firstWhere((it) => it.startY == 0);
+      final bottomBarOld = barsPositionFrom.firstWhere((it) => it.endY == 1);
+      final bottomBarNew = barsPositionTo.firstWhere((it) => it.endY == 1);
       result
-        ..add(_getTopBar(bar, progress, barsPositionFrom, barsPositionTo))
-        ..add(_getBottomBar(bar, progress, barsPositionFrom, barsPositionTo));
+        ..add(_createBarTransition(progress, topBarOld, topBarNew))
+        ..add(_createBarTransition(progress, bottomBarOld, bottomBarNew));
 
+      // Middle bar is a bar that is not drawn from top to bottom
       final middleBarsOld =
           barsPositionFrom.where((it) => it.startY > 0 && it.endY < 1);
       final middleBarsNew =
@@ -127,19 +136,15 @@ class DigitsCollection {
       // Nothing to transform
       if (middleBarsLengthOld == 0 && middleBarsLengthNew == 0) continue;
 
+      // Create transformations based on number of old and new middle bars
       if (middleBarsLengthOld == 0 && middleBarsLengthNew == 1) {
         result.add(
-          _createMiddleBarTransition(
-            bar,
-            progress,
-            _createBarFrom(middleBarsNew.first),
-            middleBarsNew.first,
-          ),
+          _createBarTransition(progress, _createBarFrom(middleBarsNew.first),
+              middleBarsNew.first),
         );
       } else if (middleBarsLengthOld == 1 && middleBarsLengthNew == 0) {
         result.add(
-          _createMiddleBarTransition(
-            bar,
+          _createBarTransition(
             progress,
             middleBarsOld.first,
             _createBarFrom(middleBarsOld.first),
@@ -147,8 +152,7 @@ class DigitsCollection {
         );
       } else if (middleBarsLengthOld == 1 && middleBarsLengthNew == 1) {
         result.add(
-          _createMiddleBarTransition(
-            bar,
+          _createBarTransition(
             progress,
             middleBarsOld.first,
             middleBarsNew.first,
@@ -156,16 +160,14 @@ class DigitsCollection {
         );
       } else if (middleBarsLengthOld == 1 && middleBarsLengthNew == 2) {
         result.add(
-          _createMiddleBarTransition(
-            bar,
+          _createBarTransition(
             progress,
             middleBarsOld.first,
             middleBarsNew.elementAt(0),
           ),
         );
         result.add(
-          _createMiddleBarTransition(
-            bar,
+          _createBarTransition(
             progress,
             middleBarsOld.first,
             middleBarsNew.elementAt(1),
@@ -175,16 +177,14 @@ class DigitsCollection {
         final newBar = middleBarsNew.first;
         final oldBarsSorted = middleBarsOld.toList()..sort(_compareBars);
         result.add(
-          _createMiddleBarTransition(
-            bar,
+          _createBarTransition(
             progress,
             oldBarsSorted[0],
             _createBarFrom(newBar, startY: newBar.startY),
           ),
         );
         result.add(
-          _createMiddleBarTransition(
-            bar,
+          _createBarTransition(
             progress,
             oldBarsSorted[1],
             _createBarFrom(newBar, endY: newBar.endY),
@@ -194,16 +194,14 @@ class DigitsCollection {
         final oldBarsSorted = middleBarsOld.toList()..sort(_compareBars);
         final newBarsSorted = middleBarsNew.toList()..sort(_compareBars);
         result.add(
-          _createMiddleBarTransition(
-            bar,
+          _createBarTransition(
             progress,
             oldBarsSorted[0],
             newBarsSorted[0],
           ),
         );
         result.add(
-          _createMiddleBarTransition(
-            bar,
+          _createBarTransition(
             progress,
             oldBarsSorted[1],
             newBarsSorted[1],
@@ -212,16 +210,14 @@ class DigitsCollection {
       } else if (middleBarsLengthOld == 0 && middleBarsLengthNew == 2) {
         final newBarSorted = middleBarsNew.toList()..sort(_compareBars);
         result.add(
-          _createMiddleBarTransition(
-            bar,
+          _createBarTransition(
             progress,
             _createBarFrom(newBarSorted[0]),
             newBarSorted[0],
           ),
         );
         result.add(
-          _createMiddleBarTransition(
-            bar,
+          _createBarTransition(
             progress,
             _createBarFrom(newBarSorted[1]),
             newBarSorted[1],
@@ -230,16 +226,14 @@ class DigitsCollection {
       } else if (middleBarsLengthOld == 2 && middleBarsLengthNew == 0) {
         final oldBarsSorted = middleBarsOld.toList()..sort(_compareBars);
         result.add(
-          _createMiddleBarTransition(
-            bar,
+          _createBarTransition(
             progress,
             oldBarsSorted[0],
             _createBarFrom(oldBarsSorted[0]),
           ),
         );
         result.add(
-          _createMiddleBarTransition(
-            bar,
+          _createBarTransition(
             progress,
             oldBarsSorted[1],
             _createBarFrom(oldBarsSorted[1]),
@@ -251,6 +245,7 @@ class DigitsCollection {
     return result;
   }
 
+  // Bar comparator for finding the topmost bar
   int _compareBars(DisplayBar one, DisplayBar two) =>
       one.startY.compareTo(two.startY);
 
@@ -262,8 +257,8 @@ class DigitsCollection {
     );
   }
 
-  DisplayBar _createMiddleBarTransition(
-    int barNumber,
+  /// Create transition from bar [from] to bar [to] based on [progress]
+  DisplayBar _createBarTransition(
     double progress,
     DisplayBar from,
     DisplayBar to,
@@ -283,55 +278,9 @@ class DigitsCollection {
     }
 
     return DisplayBar(
-      barNumber: barNumber,
+      barNumber: from.barNumber,
       startY: top,
       endY: bottom,
-    );
-  }
-
-  DisplayBar _getTopBar(
-    int barNumber,
-    double progress,
-    Iterable<DisplayBar> digitFromPosition,
-    Iterable<DisplayBar> digitToPosition,
-  ) {
-    final topBarOld = digitFromPosition.firstWhere((it) => it.startY == 0);
-    final topBarNew = digitToPosition.firstWhere((it) => it.startY == 0);
-
-    double diff;
-    if (topBarOld.endY > topBarNew.endY) {
-      diff = -1 * (topBarOld.endY - topBarNew.endY);
-    } else {
-      diff = topBarNew.endY - topBarOld.endY;
-    }
-
-    return DisplayBar(
-      barNumber: barNumber,
-      startY: 0,
-      endY: topBarOld.endY + diff * progress,
-    );
-  }
-
-  DisplayBar _getBottomBar(
-    int barNumber,
-    double progress,
-    Iterable<DisplayBar> digitFromPosition,
-    Iterable<DisplayBar> digitToPosition,
-  ) {
-    final bottomBarOld = digitFromPosition.firstWhere((it) => it.endY == 1);
-    final bottomBarNew = digitToPosition.firstWhere((it) => it.endY == 1);
-
-    double diff2;
-    if (bottomBarOld.startY > bottomBarNew.startY) {
-      diff2 = -1 * (bottomBarOld.startY - bottomBarNew.startY);
-    } else {
-      diff2 = bottomBarNew.startY - bottomBarOld.startY;
-    }
-
-    return DisplayBar(
-      barNumber: barNumber,
-      startY: bottomBarOld.startY + diff2 * progress,
-      endY: 1,
     );
   }
 

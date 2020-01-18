@@ -6,11 +6,16 @@ import 'package:flutter/material.dart';
 class ClockPainter extends CustomPainter {
   final ClockTheme theme;
   final double progress;
+
+  // Current displayed time
   final String currentHour;
   final String currentMinute;
+
+  // Time to be displayed (animated to)
   final String newHour;
   final String newMinute;
 
+  // Repository of digit bars and transformation helper
   final _digitsCollection = DigitsCollection();
 
   final _barPaint = Paint()
@@ -33,6 +38,11 @@ class ClockPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    _barPaint.color = theme.barColor;
+
+    // Draw background
+    canvas.drawColor(theme.backgroundColor, BlendMode.src);
+
     final digits = _digitsCollection.getTime(
       currentHour,
       newHour,
@@ -41,28 +51,29 @@ class ClockPainter extends CustomPainter {
       progress,
     );
 
-    _barPaint.color = theme.barColor;
-
-    // Draw background
-    canvas.drawColor(theme.backgroundColor, BlendMode.src);
-
+    // Each item consists of space+bar pair.
+    // Get available space for each (bar+space) item
     final double availableBarWidth =
-        size.width / (Const.TOTAL_BAR_NUMBER + Const.SPACE_COEFFICIENT);
-    final double spaceWidth = availableBarWidth * Const.SPACE_COEFFICIENT;
-    final double barWidth = availableBarWidth * Const.BAR_COEFFICIENT;
+        size.width / (Const.TOTAL_BAR_NUMBER + Const.AVAILABLE_SPACE_WIDTH_REL);
+    final double spaceWidth =
+        availableBarWidth * Const.AVAILABLE_SPACE_WIDTH_REL;
+    final double barWidth = availableBarWidth * Const.AVAILABLE_BAR_WIDTH_REL;
 
+    // Calculate top and bottom padding based on clock face height
     final double topBottomPaddingPx =
         Const.DIGIT_PADDING_TOP_BOTTOM * size.height;
     final availableCanvasHeight = size.height - topBottomPaddingPx * 2;
 
     for (var bar = 0; bar < Const.TOTAL_BAR_NUMBER; bar++) {
-      final double barXStart = spaceWidth + bar * barWidth + bar * spaceWidth;
-      final double barXEnd = barXStart + barWidth;
+      final double barStartX = spaceWidth + bar * barWidth + bar * spaceWidth;
+      final double barEndX = barStartX + barWidth;
 
       final bars = digits.where((item) => item.barNumber == bar);
       if (bars.isNotEmpty) {
-        // Draw digit 1 (hour)
+        // Draw digit
         bars.forEach((item) {
+          // Is item's startY and endY are 0.0 and 1.0, these bars should be
+          // drawn without top and bottom padding
           final barTop = item.startY == .0
               ? .0
               : item.startY * availableCanvasHeight + topBottomPaddingPx;
@@ -72,40 +83,26 @@ class ClockPainter extends CustomPainter {
           final topRadius = _getTopRadius(item.startY);
           final bottomRadius = _getBottomRadius(item.endY);
           final rect = RRect.fromLTRBAndCorners(
-            barXStart,
-            barTop,
-            barXEnd,
-            barBottom,
-            topLeft: topRadius,
-            topRight: topRadius,
-            bottomLeft: bottomRadius,
-            bottomRight: bottomRadius,
-          );
+              barStartX, barTop, barEndX, barBottom,
+              topLeft: topRadius,
+              topRight: topRadius,
+              bottomLeft: bottomRadius,
+              bottomRight: bottomRadius);
           canvas.drawRRect(rect, _barPaint);
         });
       } else {
         // Draw top to bottom bar
-        final rect = Rect.fromLTRB(barXStart, .0, barXEnd, size.height);
+        final rect = Rect.fromLTRB(barStartX, .0, barEndX, size.height);
         canvas.drawRect(rect, _barPaint);
       }
-
-      // todo check bounds when drawing
     }
   }
 
-  Radius _getTopRadius(double startY) {
-    if (startY > .0)
-      return Radius.circular(Const.BAR_RADIUS);
-    else
-      return Radius.zero;
-  }
+  Radius _getTopRadius(double startY) =>
+      startY > .0 ? Radius.circular(Const.BAR_RADIUS) : Radius.zero;
 
-  Radius _getBottomRadius(double endY) {
-    if (endY < 1.0)
-      return Radius.circular(Const.BAR_RADIUS);
-    else
-      return Radius.zero;
-  }
+  Radius _getBottomRadius(double endY) =>
+      endY < 1.0 ? Radius.circular(Const.BAR_RADIUS) : Radius.zero;
 
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {

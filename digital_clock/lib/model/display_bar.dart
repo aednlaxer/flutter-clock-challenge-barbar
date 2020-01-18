@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 
+/// Class to represent a single displayed bar
 class DisplayBar {
-  final int barNumber; // relative to digit start, [0; 5]
-  final double startY; // relative to height, [0.0; 1.0]
-  final double endY; // relative to height, [0.0; 1.0]
+  /// Bar number, relative to digit start, [0; 5]
+  final int barNumber;
+
+  /// Bar top position, relative to height, [0.0; 1.0]
+  final double startY;
+
+  /// Bar bottom position, relative to height, [0.0; 1.0]
+  final double endY;
 
   DisplayBar({
     @required this.barNumber,
