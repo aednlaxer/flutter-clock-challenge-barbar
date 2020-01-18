@@ -57,6 +57,11 @@ class DigitsCollection {
         minuteSecond
             .map((i) => i.copy(barNumber: i.barNumber + Const.DIGIT_4_INDEX))
             .toList(),
+      )
+      ..addAll(
+        _colon
+            .map((i) => i.copy(barNumber: i.barNumber + Const.COLON_INDEX))
+            .toList(),
       );
   }
 
@@ -104,8 +109,7 @@ class DigitsCollection {
 
     final result = List<DisplayBar>();
 
-    // TODO 6 to constants
-    for (int bar = 0; bar < 6; bar++) {
+    for (int bar = 0; bar < Const.BARS_FOR_ONE_DIGIT; bar++) {
       final barsPositionFrom = digitFrom.where((it) => it.barNumber == bar);
       final barsPositionTo = digitTo.where((it) => it.barNumber == bar);
 
@@ -252,8 +256,7 @@ class DigitsCollection {
 
   DisplayBar _createBarFrom(DisplayBar fromBar, {double startY, double endY}) {
     final barCenter = (fromBar.startY + fromBar.endY) / 2;
-    return DisplayBar(
-      barNumber: fromBar.barNumber,
+    return fromBar.copy(
       startY: startY ?? barCenter,
       endY: endY ?? barCenter,
     );
@@ -331,6 +334,12 @@ class DigitsCollection {
       endY: 1,
     );
   }
+
+  final List<DisplayBar> _colon = [
+    DisplayBar(barNumber: 0, startY: 0, endY: 0.3),
+    DisplayBar(barNumber: 0, startY: 0.4, endY: 0.6),
+    DisplayBar(barNumber: 0, startY: 0.7, endY: 1),
+  ];
 
   // These lists are generated from SVG using digits-generator/generator.py
   final List<DisplayBar> _digit_1 = [
