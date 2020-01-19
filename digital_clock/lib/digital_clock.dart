@@ -148,6 +148,5 @@ class _DigitalClockState extends State<DigitalClock>
     return "${temperature.toStringAsFixed(0)}$unit";
   }
 
-  String _getDateString() =>
-      DateFormat("EEE, MMM d").format(_dateTime).toUpperCase();
+  String _getDateString() => DateFormat.MMMEd().format(_dateTime).toUpperCase();
 }
