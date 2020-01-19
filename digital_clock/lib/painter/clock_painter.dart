@@ -96,12 +96,14 @@ class ClockPainter extends CustomPainter {
 
         // Check protected area bounds
         double barBottom;
-        if (bar >= forecastProtectedArea.barStart &&
+        if (forecastProtectedArea != null &&
+            bar >= forecastProtectedArea.barStart &&
             bar <= forecastProtectedArea.barEnd &&
             item.endY == 1.0) {
           barBottom = _getNewBottom(
               canvas, dateProtectedArea, barStartX, barEndX, size.height);
-        } else if (bar >= dateProtectedArea.barStart &&
+        } else if (dateProtectedArea != null &&
+            bar >= dateProtectedArea.barStart &&
             bar <= dateProtectedArea.barEnd &&
             item.endY == 1.0) {
           barBottom = _getNewBottom(
@@ -166,13 +168,10 @@ class ClockPainter extends CustomPainter {
     final weatherPainter = _getForecastIconPainter(weatherIcon);
     final forecastTextPainter = _getForecastTextPainter(temperature);
 
-    final weatherIconMetrics = weatherPainter.computeLineMetrics().first;
-    final weatherIconWidth = weatherIconMetrics.width;
-    final weatherIconHeight = weatherIconMetrics.height;
-
-    final textMetrics = forecastTextPainter.computeLineMetrics().first;
-    final textTop = size.height - textMetrics.height;
-    final textBottom = textTop + textMetrics.height;
+    final weatherIconWidth = weatherPainter.width;
+    final weatherIconHeight = weatherPainter.height;
+    final textTop = size.height - forecastTextPainter.height;
+    final textBottom = textTop + forecastTextPainter.height;
     final textCenter = (textBottom + textTop) / 2;
 
     final startOffsetX = 2 * barWidth + 3 * spaceWidth;
@@ -192,14 +191,16 @@ class ClockPainter extends CustomPainter {
 
     // Calculate position of the "protected" area
     final protectedAreaStartX = startOffsetX;
-    final protectedAreaEndX =
-        startOffsetX + weatherIconWidth + textMetrics.width + barWidth / 2;
+    final protectedAreaEndX = startOffsetX +
+        weatherIconWidth +
+        forecastTextPainter.width +
+        barWidth / 2;
     final iconBottom = iconOffset.dy + weatherIconHeight;
     return ProtectedArea(
       barStart: protectedAreaStartX ~/ availableBarSpaceWidth,
       barEnd: protectedAreaEndX ~/ availableBarSpaceWidth,
       startY: min(textOffset.dy, iconOffset.dy),
-      endY: max(textOffset.dy + textMetrics.height, iconBottom),
+      endY: max(textOffset.dy + forecastTextPainter.height, iconBottom),
     );
   }
 
@@ -215,9 +216,8 @@ class ClockPainter extends CustomPainter {
     double spaceWidth,
   ) {
     final textPainter = _getDateTextPainter(dateString);
-    final textMetrics = textPainter.computeLineMetrics().first;
-    final textWidth = textMetrics.width;
-    final textTop = size.height - textMetrics.height;
+    final textWidth = textPainter.width;
+    final textTop = size.height - textPainter.height;
     final endOffsetX = 2 * barWidth + 3 * spaceWidth;
     final textStartX = size.width - endOffsetX - textWidth;
     final bottomPadding = size.height * Const.TEXT_PADDING_BOTTOM;
@@ -232,7 +232,7 @@ class ClockPainter extends CustomPainter {
       barStart: protectedAreaStartX ~/ availableBarSpaceWidth,
       barEnd: protectedAreaEndX ~/ availableBarSpaceWidth,
       startY: textOffset.dy,
-      endY: textOffset.dy + textMetrics.height,
+      endY: textOffset.dy + textPainter.height,
     );
   }
 
