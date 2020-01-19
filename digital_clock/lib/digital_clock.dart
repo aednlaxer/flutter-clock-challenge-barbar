@@ -118,7 +118,7 @@ class _DigitalClockState extends State<DigitalClock>
       painter: ClockPainter(
         theme: theme,
         weatherIcon: getIcon(widget.model.weatherCondition, _isNight()),
-        temperatureString: widget.model.temperatureString.toUpperCase(),
+        temperatureString: _getTemperatureString(),
         dateString: _getDateString(),
         progress: _progress,
         currentHour: hoursMinutes[_DigitsPosition.HourOld],
@@ -141,6 +141,12 @@ class _DigitalClockState extends State<DigitalClock>
   }
 
   bool _isNight() => _dateTime.hour >= 22 && _dateTime.hour <= 5;
+
+  String _getTemperatureString() {
+    final num temperature = widget.model.temperature;
+    final unit = widget.model.unitString;
+    return "${temperature.toStringAsFixed(0)}$unit";
+  }
 
   String _getDateString() =>
       DateFormat("EEE, MMM d").format(_dateTime).toUpperCase();
