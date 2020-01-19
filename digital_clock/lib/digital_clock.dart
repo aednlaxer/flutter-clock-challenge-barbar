@@ -86,18 +86,20 @@ class _DigitalClockState extends State<DigitalClock>
       _dateTime = DateTime.now();
       // Update once per minute. If you want to update every second, use the
       // following code.
-//      _timer = Timer(
-//        const Duration(minutes: 1) -
-//            const Duration(seconds: _dateTime.second) -
-//            const Duration(milliseconds: _dateTime.millisecond),
-//        _updateTime,
-//      );
-      // Update once per second, but make sure to do it at the beginning of each
-      // new second, so that the clock is accurate.
       _timer = Timer(
-        Duration(seconds: 1) - Duration(milliseconds: _dateTime.millisecond),
+        const Duration(minutes: 1) -
+            Duration(seconds: _dateTime.second) -
+            Duration(milliseconds: _dateTime.millisecond),
         _updateTime,
       );
+
+      // This part can be useful for testing
+      // Update once per second, but make sure to do it at the beginning of each
+      // new second, so that the clock is accurate.
+//      _timer = Timer(
+//        Duration(seconds: 1) - Duration(milliseconds: _dateTime.millisecond),
+//        _updateTime,
+//      );
 
       // Run digit change animation
       _animationController.reset();
@@ -127,7 +129,7 @@ class _DigitalClockState extends State<DigitalClock>
 
   Map<_DigitsPosition, String> _getDisplayedAndPreviousTime(bool is24hFormat) {
     final hourFormat = DateFormat(is24hFormat ? 'HH' : 'hh');
-    final minuteFormat = DateFormat('ss'); // FIXME ss to mm
+    final minuteFormat = DateFormat('mm');
     return {
       _DigitsPosition.HourOld: hourFormat.format(_previousDateTime),
       _DigitsPosition.MinuteOld: minuteFormat.format(_previousDateTime),
