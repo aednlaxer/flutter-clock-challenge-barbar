@@ -1,0 +1,18 @@
+[
+  {
+    "family": "Oswald",
+    "fonts": [
+      {
+        "asset": "fonts/oswald/Oswald-Medium.ttf"
+      }
+    ]
+  },
+  {
+    "family": "WeatherIconsLite",
+    "fonts": [
+      {
+        "asset": "fonts/weather-icons-lite/weather-icons-lite.ttf"
+      }
+    ]
+  }
+]
