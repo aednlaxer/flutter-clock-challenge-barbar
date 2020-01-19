@@ -39,8 +39,7 @@ class DigitsCollection {
         _getDigit(oldMinute2), _getDigit(newMinute2), progress);
 
     // Build a list where each digit's bar has location which is relative to
-    // the start of clock face canvas (counted in bars 0 to N)
-
+    // the start of clock face canvas (counted in bars from 0 to N)
     final digits = List<DisplayBar>();
 
     digits
@@ -257,10 +256,11 @@ class DigitsCollection {
     return result;
   }
 
-  // Bar comparator for finding the topmost bar
+  /// Bar comparator for finding the topmost bar
   int _compareBars(DisplayBar one, DisplayBar two) =>
       one.startY.compareTo(two.startY);
 
+  /// Helper method to create a new bar from existing bar
   DisplayBar _createBarFrom(DisplayBar fromBar, {double startY, double endY}) {
     final barCenter = (fromBar.startY + fromBar.endY) / 2;
     return fromBar.copy(

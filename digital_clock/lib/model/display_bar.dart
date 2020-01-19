@@ -20,7 +20,8 @@ class DisplayBar {
         assert(startY <= endY);
 
   @override
-  String toString() => "DisplayBar{bar=$barNumber startY=$startY endY=$endY}";
+  String toString() =>
+      'DisplayBar{barNumber: $barNumber, startY: $startY, endY: $endY}';
 
   DisplayBar copy({int barNumber, double startY, double endY}) {
     return DisplayBar(

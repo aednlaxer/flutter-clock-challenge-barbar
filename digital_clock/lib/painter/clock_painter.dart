@@ -5,14 +5,14 @@ import 'package:digital_clock/const/const.dart';
 import 'package:digital_clock/data/digits_collection.dart';
 import 'package:digital_clock/model/protected_area.dart';
 import 'package:digital_clock/model/weather_icon.dart';
-import 'package:digital_clock/theme/theme.dart';
+import 'package:digital_clock/model/theme.dart';
 import 'package:flutter/material.dart';
 
 class ClockPainter extends CustomPainter {
   final ClockTheme theme;
   final double progress;
 
-  // Current displayed time
+  // Current displayed time (animated from)
   final String currentHour;
   final String currentMinute;
 
@@ -130,6 +130,8 @@ class ClockPainter extends CustomPainter {
     }
   }
 
+  /// Get new bar bottom position respecting protected area's bounds
+  /// This method draws an additional rectangle under the safe area
   double _getNewBottom(Canvas canvas, ProtectedArea protectedArea,
       double barStartX, double barEndX, double height) {
     // Draw extra bar under the protected area
@@ -148,6 +150,9 @@ class ClockPainter extends CustomPainter {
     return protectedArea.startY;
   }
 
+  /// Draw weather icon and temperature text
+  /// This method returns instance of ProtectedArea class that can be used later
+  /// for drawing bars
   ProtectedArea _drawWeatherForecast(
     Canvas canvas,
     Size size,
@@ -188,24 +193,18 @@ class ClockPainter extends CustomPainter {
     final protectedAreaStartX = startOffsetX;
     final protectedAreaEndX =
         startOffsetX + weatherIconWidth + textMetrics.width + barWidth / 2;
-
     final iconBottom = iconOffset.dy + weatherIconHeight;
-
-    final protectedAreaTop = min(textOffset.dy, iconOffset.dy);
-    final protectedAreaBottom =
-        max(textOffset.dy + textMetrics.height, iconBottom);
-
-    final protectedAreaStartBar = protectedAreaStartX ~/ availableBarSpaceWidth;
-    final protectedAreaEndBar = protectedAreaEndX ~/ availableBarSpaceWidth;
-
     return ProtectedArea(
-      barStart: protectedAreaStartBar,
-      barEnd: protectedAreaEndBar,
-      startY: protectedAreaTop,
-      endY: protectedAreaBottom,
+      barStart: protectedAreaStartX ~/ availableBarSpaceWidth,
+      barEnd: protectedAreaEndX ~/ availableBarSpaceWidth,
+      startY: min(textOffset.dy, iconOffset.dy),
+      endY: max(textOffset.dy + textMetrics.height, iconBottom),
     );
   }
 
+  /// Draw date text
+  /// This method returns instance of ProtectedArea class that can be used later
+  /// for drawing bars
   ProtectedArea _drawDateString(
     Canvas canvas,
     Size size,
@@ -236,6 +235,7 @@ class ClockPainter extends CustomPainter {
     );
   }
 
+  /// Get painter for weather icon
   TextPainter _getForecastIconPainter(WeatherIcon weatherIcon) {
     final weatherTextSpan = TextSpan(
       text: String.fromCharCode(weatherIcon.charCode),
@@ -252,6 +252,7 @@ class ClockPainter extends CustomPainter {
     )..layout();
   }
 
+  /// Get painter for forecast text
   TextPainter _getForecastTextPainter(String text) {
     final textSpan = TextSpan(
       text: text,
@@ -271,6 +272,7 @@ class ClockPainter extends CustomPainter {
     return textPainter;
   }
 
+  /// Get painter for date text
   TextPainter _getDateTextPainter(String text) {
     final textSpan = TextSpan(
       text: text,
@@ -283,16 +285,24 @@ class ClockPainter extends CustomPainter {
 
     final textPainter = TextPainter(
       text: textSpan,
-      textDirection: TextDirection.ltr, // TODO
+      textDirection: TextDirection.ltr,
       maxLines: 1,
     );
     textPainter.layout();
     return textPainter;
   }
 
+  /// Get bar's top radius (should be used for top left and top right corners)
+  ///
+  /// Decides whether radius should be present based on value of [startY]
   Radius _getTopRadius(double startY) =>
       startY > .0 ? Radius.circular(Const.BAR_RADIUS) : Radius.zero;
 
+  /// Get bar's bottom radius (should be used for bottom left and bottom
+  /// right corners)
+  ///
+  /// Decides whether radius should be present based on values of
+  /// [canvasHeight] and [endY]
   Radius _getBottomRadius(double canvasHeight, double endY) =>
       endY < canvasHeight ? Radius.circular(Const.BAR_RADIUS) : Radius.zero;
 

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:digital_clock/painter/clock_painter.dart';
-import 'package:digital_clock/theme/theme.dart';
+import 'package:digital_clock/model/theme.dart';
 import 'package:flutter_clock_helper/model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -140,13 +140,16 @@ class _DigitalClockState extends State<DigitalClock>
     };
   }
 
+  /// Used to determine whether night icon set or day set should be used
   bool _isNight() => _dateTime.hour >= 22 && _dateTime.hour <= 5;
 
+  /// Get temperature string. Returns integer value and unit
   String _getTemperatureString() {
     final num temperature = widget.model.temperature;
     final unit = widget.model.unitString;
     return "${temperature.toStringAsFixed(0)}$unit";
   }
 
+  /// Get localized date string value
   String _getDateString() => DateFormat.MMMEd().format(_dateTime).toUpperCase();
 }

@@ -1,9 +1,18 @@
 import 'package:flutter/widgets.dart';
 
+/// Class to represent a protected or safe area for displaying
+/// temperature and current date
 class ProtectedArea {
+  /// Area's start bar number (inclusive)
   final int barStart;
+
+  /// Area's end bar number (inclusive)
   final int barEnd;
+
+  /// Area's start Y position (in pixels)
   final double startY;
+
+  // Area's end Y position (in pixels)
   final double endY;
 
   ProtectedArea({
@@ -17,7 +26,6 @@ class ProtectedArea {
         assert(endY >= 0);
 
   @override
-  String toString() {
-    return 'ProtectedArea{barStart: $barStart, barEnd: $barEnd, startY: $startY, endY: $endY}';
-  }
+  String toString() =>
+      'ProtectedArea{barStart: $barStart, barEnd: $barEnd, startY: $startY, endY: $endY}';
 }

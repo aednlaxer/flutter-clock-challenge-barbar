@@ -1,6 +1,8 @@
 import 'package:flutter_clock_helper/model.dart';
 
+/// Class to represent a weather condition icon
 class WeatherIcon {
+  /// Char code from WeatherIconLite font (included in this project)
   final int charCode;
 
   const WeatherIcon(this.charCode);
@@ -15,6 +17,11 @@ const IconClearNight = const WeatherIcon(0xf02e);
 const IconThunderstorm = const WeatherIcon(0xf01e);
 const IconWindy = const WeatherIcon(0xf050);
 
+/// Get corresponding icon for a given [weatherCondition]
+///
+/// [isNight] is used when deciding whether sun or moon icon is displayed
+///
+/// Returns null when [weatherCondition] is non supported
 WeatherIcon getIcon(WeatherCondition weatherCondition, bool isNight) {
   switch (weatherCondition) {
     case WeatherCondition.cloudy:
@@ -31,5 +38,7 @@ WeatherIcon getIcon(WeatherCondition weatherCondition, bool isNight) {
       return IconThunderstorm;
     case WeatherCondition.windy:
       return IconWindy;
+    default:
+      return null;
   }
 }
