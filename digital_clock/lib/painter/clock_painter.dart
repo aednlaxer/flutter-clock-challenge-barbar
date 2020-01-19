@@ -21,7 +21,8 @@ class ClockPainter extends CustomPainter {
   final String newMinute;
 
   final WeatherIcon weatherIcon;
-  final String temperature;
+  final String temperatureString;
+  final String dateString;
 
   // Repository of digit bars and transformation helper
   final _digitsCollection = DigitsCollection();
@@ -34,7 +35,8 @@ class ClockPainter extends CustomPainter {
     Colors foo,
     @required this.theme,
     @required this.weatherIcon,
-    @required this.temperature,
+    @required this.temperatureString,
+    @required this.dateString,
     @required this.progress,
     @required this.currentHour,
     @required this.currentMinute,
@@ -44,7 +46,10 @@ class ClockPainter extends CustomPainter {
         assert(currentHour != null && currentHour.length == 2),
         assert(currentMinute != null && currentMinute.length == 2),
         assert(newHour != null && newHour.length == 2),
-        assert(newMinute != null && newMinute.length == 2);
+        assert(newMinute != null && newMinute.length == 2),
+        assert(weatherIcon != null),
+        assert(temperatureString != null),
+        assert(dateString != null);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -55,12 +60,10 @@ class ClockPainter extends CustomPainter {
 
     // Each item consists of space+bar pair.
     // Get available space for each (bar+space) item
-    final double availableBarSpaceWidth =
+    final double barSpaceWidth =
         size.width / (Const.TOTAL_BAR_NUMBER + Const.AVAILABLE_SPACE_WIDTH_REL);
-    final double spaceWidth =
-        availableBarSpaceWidth * Const.AVAILABLE_SPACE_WIDTH_REL;
-    final double barWidth =
-        availableBarSpaceWidth * Const.AVAILABLE_BAR_WIDTH_REL;
+    final double spaceWidth = barSpaceWidth * Const.AVAILABLE_SPACE_WIDTH_REL;
+    final double barWidth = barSpaceWidth * Const.AVAILABLE_BAR_WIDTH_REL;
 
     // Calculate top and bottom padding based on clock face height
     final double topBottomPaddingPx =
@@ -68,8 +71,10 @@ class ClockPainter extends CustomPainter {
     final availableCanvasHeight = size.height - topBottomPaddingPx * 2;
 
     // Draw weather forecast and get its bounds
-    final protectedArea = _drawWeatherForecast(canvas, size, weatherIcon,
-        temperature, availableBarSpaceWidth, barWidth, spaceWidth);
+    final forecastProtectedArea = _drawWeatherForecast(canvas, size,
+        weatherIcon, temperatureString, barSpaceWidth, barWidth, spaceWidth);
+    final dateProtectedArea = _drawDateString(
+        canvas, size, dateString, barSpaceWidth, barWidth, spaceWidth);
 
     // Get digits and colon to be displayed
     final digits = _digitsCollection.getTime(
@@ -90,23 +95,16 @@ class ClockPainter extends CustomPainter {
 
         // Check protected area bounds
         double barBottom;
-        if (bar >= protectedArea.barStart &&
-            bar <= protectedArea.barEnd &&
+        if (bar >= forecastProtectedArea.barStart &&
+            bar <= forecastProtectedArea.barEnd &&
             item.endY == 1.0) {
-          // Set bar's new bottom
-          barBottom = protectedArea.startY;
-
-          // Draw extra bar under the protected area
-          final topRadius = _getTopRadius(protectedArea.endY);
-          final rect = RRect.fromLTRBAndCorners(
-            barStartX,
-            protectedArea.endY,
-            barEndX,
-            size.height,
-            topLeft: topRadius,
-            topRight: topRadius,
-          );
-          canvas.drawRRect(rect, _barPaint);
+          barBottom = _getNewBottom(
+              canvas, dateProtectedArea, barStartX, barEndX, size.height);
+        } else if (bar >= dateProtectedArea.barStart &&
+            bar <= dateProtectedArea.barEnd &&
+            item.endY == 1.0) {
+          barBottom = _getNewBottom(
+              canvas, dateProtectedArea, barStartX, barEndX, size.height);
         } else {
           // Is item's endY is 1.0, bar should be drawn without bottom padding
           barBottom = item.endY == 1.0
@@ -130,6 +128,24 @@ class ClockPainter extends CustomPainter {
         canvas.drawRRect(rect, _barPaint);
       });
     }
+  }
+
+  double _getNewBottom(Canvas canvas, ProtectedArea protectedArea,
+      double barStartX, double barEndX, double height) {
+    // Draw extra bar under the protected area
+    final topRadius = _getTopRadius(protectedArea.endY);
+    final rect = RRect.fromLTRBAndCorners(
+      barStartX,
+      protectedArea.endY,
+      barEndX,
+      height,
+      topLeft: topRadius,
+      topRight: topRadius,
+    );
+    canvas.drawRRect(rect, _barPaint);
+
+    // Set bar's new bottom
+    return protectedArea.startY;
   }
 
   ProtectedArea _drawWeatherForecast(
@@ -168,9 +184,9 @@ class ClockPainter extends CustomPainter {
     forecastTextPainter.paint(canvas, textOffset);
     weatherPainter.paint(canvas, iconOffset);
 
-    // Calculate "protected" area position
-    final bottomLeftProtectedAreaStartX = startOffsetX;
-    final bottomLeftProtectedAreaEndX =
+    // Calculate position of the "protected" area
+    final protectedAreaStartX = startOffsetX;
+    final protectedAreaEndX =
         startOffsetX + weatherIconWidth + textMetrics.width + barWidth / 2;
 
     final iconBottom = iconOffset.dy + weatherIconHeight;
@@ -179,16 +195,44 @@ class ClockPainter extends CustomPainter {
     final protectedAreaBottom =
         max(textOffset.dy + textMetrics.height, iconBottom);
 
-    final protectedAreaStartBar =
-        bottomLeftProtectedAreaStartX ~/ availableBarSpaceWidth;
-    final protectedAreaEndBar =
-        bottomLeftProtectedAreaEndX ~/ availableBarSpaceWidth;
+    final protectedAreaStartBar = protectedAreaStartX ~/ availableBarSpaceWidth;
+    final protectedAreaEndBar = protectedAreaEndX ~/ availableBarSpaceWidth;
 
     return ProtectedArea(
       barStart: protectedAreaStartBar,
       barEnd: protectedAreaEndBar,
       startY: protectedAreaTop,
       endY: protectedAreaBottom,
+    );
+  }
+
+  ProtectedArea _drawDateString(
+    Canvas canvas,
+    Size size,
+    String dateString,
+    double availableBarSpaceWidth,
+    double barWidth,
+    double spaceWidth,
+  ) {
+    final textPainter = _getDateTextPainter(dateString);
+    final textMetrics = textPainter.computeLineMetrics().first;
+    final textWidth = textMetrics.width;
+    final textTop = size.height - textMetrics.height;
+    final endOffsetX = 2 * barWidth + 3 * spaceWidth;
+    final textStartX = size.width - endOffsetX - textWidth;
+    final bottomPadding = size.height * Const.TEXT_PADDING_BOTTOM;
+    final textOffset = Offset(textStartX, textTop - bottomPadding);
+
+    textPainter.paint(canvas, textOffset);
+
+    // Calculate position of the "protected" area
+    final protectedAreaStartX = textStartX;
+    final protectedAreaEndX = textStartX + textWidth - barWidth / 2;
+    return ProtectedArea(
+      barStart: protectedAreaStartX ~/ availableBarSpaceWidth,
+      barEnd: protectedAreaEndX ~/ availableBarSpaceWidth,
+      startY: textOffset.dy,
+      endY: textOffset.dy + textMetrics.height,
     );
   }
 
@@ -210,7 +254,7 @@ class ClockPainter extends CustomPainter {
 
   TextPainter _getForecastTextPainter(String text) {
     final textSpan = TextSpan(
-      text: text ?? "",
+      text: text,
       style: TextStyle(
         color: theme.barColor,
         fontFamily: Const.FONT_FACE_OSWALD,
@@ -221,6 +265,25 @@ class ClockPainter extends CustomPainter {
     final textPainter = TextPainter(
       text: textSpan,
       textDirection: TextDirection.ltr,
+      maxLines: 1,
+    );
+    textPainter.layout();
+    return textPainter;
+  }
+
+  TextPainter _getDateTextPainter(String text) {
+    final textSpan = TextSpan(
+      text: text,
+      style: TextStyle(
+        color: theme.barColor,
+        fontFamily: Const.FONT_FACE_OSWALD,
+        fontSize: Const.FONT_SIZE_TEXT,
+      ),
+    );
+
+    final textPainter = TextPainter(
+      text: textSpan,
+      textDirection: TextDirection.ltr, // TODO
       maxLines: 1,
     );
     textPainter.layout();
