@@ -3,8 +3,8 @@ import 'package:digital_clock/model/display_bar.dart';
 
 class DigitsCollection {
   /// Get bars transformation for given old time, new time and progress.
-  /// Items in the returned result will have proper offset from start
-  /// Returned list will not contain separator and padding bars
+  /// Items in the returned result will have proper offset from start for
+  /// each digit
   List<DisplayBar> getTime(
     String oldHour,
     String newHour,
@@ -40,7 +40,10 @@ class DigitsCollection {
 
     // Build a list where each digit's bar has location which is relative to
     // the start of clock face canvas (counted in bars 0 to N)
-    return List<DisplayBar>()
+
+    final digits = List<DisplayBar>();
+
+    digits
       ..addAll(
         hourFirst
             .map((i) => i.copy(barNumber: i.barNumber + Const.DIGIT_1_INDEX))
@@ -66,6 +69,15 @@ class DigitsCollection {
             .map((i) => i.copy(barNumber: i.barNumber + Const.COLON_INDEX))
             .toList(),
       );
+
+    // Add missing vertical bars
+    for (int barNumber = 0; barNumber < Const.TOTAL_BAR_NUMBER; barNumber++) {
+      if (!digits.any((i) => i.barNumber == barNumber)) {
+        digits.add(DisplayBar(barNumber: barNumber, startY: .0, endY: 1.0));
+      }
+    }
+
+    return digits;
   }
 
   List<DisplayBar> _getDigit(int digit) {
