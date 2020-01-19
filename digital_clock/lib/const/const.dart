@@ -62,4 +62,13 @@ class Const {
   // This defines radius of corners
   // Must be >= 0.0
   static const double BAR_RADIUS = 16.0;
+
+  static const String FONT_FACE_WEATHER_ICONS = "WeatherIconsLite";
+  static const String FONT_FACE_OSWALD = "Oswald";
+
+  static const double FONT_SIZE_WEATHER_ICONS = 24;
+  static const double FONT_SIZE_TEXT = 32;
+
+  // Relative to clock face's height
+  static const double TEXT_PADDING_BOTTOM = 0.05;
 }

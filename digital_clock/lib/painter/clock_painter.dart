@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:digital_clock/const/const.dart';
 import 'package:digital_clock/data/digits_collection.dart';
 import 'package:digital_clock/model/protected_area.dart';
+import 'package:digital_clock/model/weather_icon.dart';
 import 'package:digital_clock/theme/theme.dart';
 import 'package:flutter/material.dart';
 
@@ -19,6 +20,9 @@ class ClockPainter extends CustomPainter {
   final String newHour;
   final String newMinute;
 
+  final WeatherIcon weatherIcon;
+  final String temperature;
+
   // Repository of digit bars and transformation helper
   final _digitsCollection = DigitsCollection();
 
@@ -29,6 +33,8 @@ class ClockPainter extends CustomPainter {
   ClockPainter({
     Colors foo,
     @required this.theme,
+    @required this.weatherIcon,
+    @required this.temperature,
     @required this.progress,
     @required this.currentHour,
     @required this.currentMinute,
@@ -62,8 +68,8 @@ class ClockPainter extends CustomPainter {
     final availableCanvasHeight = size.height - topBottomPaddingPx * 2;
 
     // Draw weather forecast and get its bounds
-    final protectedArea = _drawWeatherForecast(
-        canvas, size, availableBarSpaceWidth, barWidth, spaceWidth);
+    final protectedArea = _drawWeatherForecast(canvas, size, weatherIcon,
+        temperature, availableBarSpaceWidth, barWidth, spaceWidth);
 
     // Get digits and colon to be displayed
     final digits = _digitsCollection.getTime(
@@ -126,16 +132,17 @@ class ClockPainter extends CustomPainter {
     }
   }
 
-  // TODO icon
   ProtectedArea _drawWeatherForecast(
     Canvas canvas,
     Size size,
+    WeatherIcon weatherIcon,
+    String temperature,
     double availableBarSpaceWidth,
     double barWidth,
     double spaceWidth,
   ) {
-    final weatherPainter = _getForecastIconPainter();
-    final forecastTextPainter = _getForecastTextPainter("25°C"); // TODO
+    final weatherPainter = _getForecastIconPainter(weatherIcon);
+    final forecastTextPainter = _getForecastTextPainter(temperature);
 
     final weatherIconMetrics = weatherPainter.computeLineMetrics().first;
     final weatherIconWidth = weatherIconMetrics.width;
@@ -147,14 +154,14 @@ class ClockPainter extends CustomPainter {
     final textCenter = (textBottom + textTop) / 2;
 
     final startOffsetX = 2 * barWidth + 3 * spaceWidth;
-    final bottomPadding = 24; // FIXME
+    final bottomPadding = size.height * Const.TEXT_PADDING_BOTTOM;
 
     final iconOffset = Offset(
       startOffsetX,
-      textCenter - weatherIconHeight / 2 - bottomPadding + 2,
+      textCenter - weatherIconHeight / 2 - bottomPadding,
     );
     final textOffset = Offset(
-      startOffsetX + weatherIconWidth + barWidth / 2,
+      startOffsetX + weatherIconWidth + barWidth,
       textTop - bottomPadding,
     );
 
@@ -185,21 +192,20 @@ class ClockPainter extends CustomPainter {
     );
   }
 
-  TextPainter _getForecastIconPainter() {
-    final icon = Icons.wb_sunny;
+  TextPainter _getForecastIconPainter(WeatherIcon weatherIcon) {
     final weatherTextSpan = TextSpan(
-      text: String.fromCharCode(icon.codePoint),
+      text: String.fromCharCode(weatherIcon.charCode),
       style: TextStyle(
         color: theme.barColor,
-        fontFamily: icon.fontFamily,
-        fontSize: 32,
+        fontFamily: Const.FONT_FACE_WEATHER_ICONS,
+        fontSize: Const.FONT_SIZE_WEATHER_ICONS,
       ),
     );
     return TextPainter(
       text: weatherTextSpan,
       textDirection: TextDirection.ltr,
       maxLines: 1,
-    )..layout(minWidth: 0, maxWidth: 150); // FIXME
+    )..layout();
   }
 
   TextPainter _getForecastTextPainter(String text) {
@@ -207,8 +213,8 @@ class ClockPainter extends CustomPainter {
       text: text ?? "",
       style: TextStyle(
         color: theme.barColor,
-        fontSize: 32,
-        fontFamily: "Oswald",
+        fontFamily: Const.FONT_FACE_OSWALD,
+        fontSize: Const.FONT_SIZE_TEXT,
       ),
     );
 
@@ -217,7 +223,7 @@ class ClockPainter extends CustomPainter {
       textDirection: TextDirection.ltr,
       maxLines: 1,
     );
-    textPainter.layout(minWidth: 0, maxWidth: 150); // FIXME
+    textPainter.layout();
     return textPainter;
   }
 

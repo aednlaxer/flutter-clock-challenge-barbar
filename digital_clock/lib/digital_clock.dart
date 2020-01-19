@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'const/const.dart';
+import 'model/weather_icon.dart';
 
 enum _DigitsPosition { HourOld, MinuteOld, HourNew, MinuteNew }
 
@@ -116,6 +117,8 @@ class _DigitalClockState extends State<DigitalClock>
       size: Size.infinite,
       painter: ClockPainter(
         theme: theme,
+        weatherIcon: getIcon(widget.model.weatherCondition, _isNight()),
+        temperature: widget.model.temperatureString,
         progress: _progress,
         currentHour: hoursMinutes[_DigitsPosition.HourOld],
         currentMinute: hoursMinutes[_DigitsPosition.MinuteOld],
@@ -135,4 +138,6 @@ class _DigitalClockState extends State<DigitalClock>
       _DigitsPosition.MinuteNew: minuteFormat.format(_dateTime),
     };
   }
+
+  bool _isNight() => _dateTime.hour >= 22 && _dateTime.hour <= 5;
 }
