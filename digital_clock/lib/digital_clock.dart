@@ -107,16 +107,12 @@ class _DigitalClockState extends State<DigitalClock>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context).brightness == Brightness.light
-        ? LightTheme
-        : DarkTheme;
     final hoursMinutes =
         _getDisplayedAndPreviousTime(widget.model.is24HourFormat);
-
     return CustomPaint(
       size: Size.infinite,
       painter: ClockPainter(
-        theme: theme,
+        theme: DarkTheme,
         weatherIcon: getIcon(widget.model.weatherCondition, _isNight()),
         temperatureString: _getTemperatureString(),
         dateString: _getDateString(),

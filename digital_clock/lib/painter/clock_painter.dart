@@ -27,9 +27,8 @@ class ClockPainter extends CustomPainter {
   // Repository of digit bars and transformation helper
   final _digitsCollection = DigitsCollection();
 
-  final _barPaint = Paint()
-    ..strokeWidth = 0
-    ..style = PaintingStyle.fill;
+  final _backgroundPaint = Paint()..style = PaintingStyle.fill;
+  final _barPaint = Paint()..style = PaintingStyle.fill;
 
   ClockPainter({
     Colors foo,
@@ -56,7 +55,9 @@ class ClockPainter extends CustomPainter {
     _barPaint.color = theme.barColor;
 
     // Draw background
-    canvas.drawColor(theme.backgroundColor, BlendMode.src);
+    _backgroundPaint.color = theme.backgroundColor;
+    final backgroundRect = Rect.fromLTRB(.0, .0, size.width, size.height);
+    canvas.drawRect(backgroundRect, _backgroundPaint);
 
     // Each item consists of space+bar pair.
     // Get available space for each (bar+space) item
