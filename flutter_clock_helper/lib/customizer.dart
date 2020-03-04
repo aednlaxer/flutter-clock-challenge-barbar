@@ -191,9 +191,10 @@ class _ClockCustomizerState extends State<ClockCustomizer> {
     return MaterialApp(
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
-      themeMode: _themeMode,
+      themeMode: ThemeMode.dark,
       debugShowCheckedModeBanner: false,
       home: Scaffold(
+        backgroundColor: const Color(0xFF090042),
         resizeToAvoidBottomPadding: false,
         endDrawer: _configDrawer(context),
         body: SafeArea(

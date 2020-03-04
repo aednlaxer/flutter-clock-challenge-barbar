@@ -10,12 +10,16 @@ class DigitsCollection {
     String newHour,
     String oldMinute,
     String newMinute,
+    String oldSecond,
+    String newSecond,
     double progress,
   ) {
     assert(oldHour != null && oldHour.length == 2);
     assert(newHour != null && newHour.length == 2);
     assert(oldMinute != null && oldMinute.length == 2);
     assert(newMinute != null && newMinute.length == 2);
+    assert(oldSecond != null && oldSecond.length == 2);
+    assert(newSecond != null && newSecond.length == 2);
     assert(progress >= 0 && progress <= 1);
 
     final oldHour1 = int.parse(oldHour.substring(0, 1));
@@ -28,6 +32,11 @@ class DigitsCollection {
     final newMinute1 = int.parse(newMinute.substring(0, 1));
     final newMinute2 = int.parse(newMinute.substring(1, 2));
 
+    final oldSecond1 = int.parse(oldSecond.substring(0, 1));
+    final oldSecond2 = int.parse(oldSecond.substring(1, 2));
+    final newSecond1 = int.parse(newSecond.substring(0, 1));
+    final newSecond2 = int.parse(newSecond.substring(1, 2));
+
     // Get transitions for every digit
     final hourFirst =
         _getDigitTransition(_getDigit(oldHour1), _getDigit(newHour1), progress);
@@ -37,6 +46,10 @@ class DigitsCollection {
         _getDigit(oldMinute1), _getDigit(newMinute1), progress);
     final minuteSecond = _getDigitTransition(
         _getDigit(oldMinute2), _getDigit(newMinute2), progress);
+    final secondFirst = _getDigitTransition(
+        _getDigit(oldSecond1), _getDigit(newSecond1), progress);
+    final secondSecond = _getDigitTransition(
+        _getDigit(oldSecond2), _getDigit(newSecond2), progress);
 
     // Build a list where each digit's bar has location which is relative to
     // the start of clock face canvas (counted in bars from 0 to N)
@@ -66,6 +79,26 @@ class DigitsCollection {
       ..addAll(
         _colon
             .map((i) => i.copy(barNumber: i.barNumber + Const.COLON_INDEX))
+            .toList(),
+      )
+      ..addAll(
+        _colon
+            .map((i) =>
+                i.copy(barNumber: i.barNumber + Const.COLON_MIN_SEC_INDEX))
+            .toList(),
+      )
+
+      // TODO colon
+      ..addAll(
+        secondFirst
+            .map(
+                (i) => i.copy(barNumber: i.barNumber + Const.DIGIT_SEC_1_INDEX))
+            .toList(),
+      )
+      ..addAll(
+        secondSecond
+            .map(
+                (i) => i.copy(barNumber: i.barNumber + Const.DIGIT_SEC_2_INDEX))
             .toList(),
       );
 

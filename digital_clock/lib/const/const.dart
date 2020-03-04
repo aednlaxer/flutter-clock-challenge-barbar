@@ -23,7 +23,7 @@ class Const {
   // Offset from top and bottom of the clock face.
   // Relative to height, must be within [0.0; 1.0] bounds.
   // This helps to "squeeze" digits vertically
-  static const double DIGIT_PADDING_TOP_BOTTOM = 0.28;
+  static const double DIGIT_PADDING_TOP_BOTTOM = 0.35;
 
   // Clock face width in bars - total number of displayed bars
   static const int TOTAL_BAR_NUMBER = PADDING_BAR_COUNT +
@@ -38,6 +38,14 @@ class Const {
       BARS_FOR_ONE_DIGIT + // first minute digit
       DIGIT_SEPARATOR_BAR_COUNT +
       BARS_FOR_ONE_DIGIT + // second minute digit
+      DIGIT_SEPARATOR_BAR_COUNT +
+      DIGIT_SEPARATOR_BAR_COUNT +
+      COLON_BAR_COUNT + // colon
+      DIGIT_SEPARATOR_BAR_COUNT +
+      DIGIT_SEPARATOR_BAR_COUNT +
+      BARS_FOR_ONE_DIGIT + // first second digit
+      DIGIT_SEPARATOR_BAR_COUNT +
+      BARS_FOR_ONE_DIGIT + // second second digit
       PADDING_BAR_COUNT;
 
   // Indices of colon and digits
@@ -54,6 +62,16 @@ class Const {
       DIGIT_SEPARATOR_BAR_COUNT;
   static const int DIGIT_4_INDEX =
       DIGIT_3_INDEX + BARS_FOR_ONE_DIGIT + DIGIT_SEPARATOR_BAR_COUNT;
+  static const int COLON_MIN_SEC_INDEX = DIGIT_4_INDEX +
+      BARS_FOR_ONE_DIGIT +
+      DIGIT_SEPARATOR_BAR_COUNT +
+      DIGIT_SEPARATOR_BAR_COUNT;
+  static const int DIGIT_SEC_1_INDEX = COLON_MIN_SEC_INDEX +
+      COLON_BAR_COUNT +
+      DIGIT_SEPARATOR_BAR_COUNT +
+      DIGIT_SEPARATOR_BAR_COUNT;
+  static const int DIGIT_SEC_2_INDEX =
+      DIGIT_SEC_1_INDEX + BARS_FOR_ONE_DIGIT + DIGIT_SEPARATOR_BAR_COUNT;
 
   // Duration of digit change animation
   static const int DIGIT_CHANGE_ANIMATION_DURATION = 300;

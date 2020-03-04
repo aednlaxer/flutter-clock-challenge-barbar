@@ -15,10 +15,12 @@ class ClockPainter extends CustomPainter {
   // Current displayed time (animated from)
   final String currentHour;
   final String currentMinute;
+  final String currentSecond;
 
   // Time to be displayed (animated to)
   final String newHour;
   final String newMinute;
+  final String newSecond;
 
   final WeatherIcon weatherIcon;
   final String temperatureString;
@@ -39,8 +41,10 @@ class ClockPainter extends CustomPainter {
     @required this.progress,
     @required this.currentHour,
     @required this.currentMinute,
+    @required this.currentSecond,
     @required this.newHour,
     @required this.newMinute,
+    @required this.newSecond,
   })  : assert(progress >= 0 && progress <= 1),
         assert(currentHour != null && currentHour.length == 2),
         assert(currentMinute != null && currentMinute.length == 2),
@@ -78,8 +82,8 @@ class ClockPainter extends CustomPainter {
         canvas, size, dateString, barSpaceWidth, barWidth, spaceWidth);
 
     // Get digits and colon to be displayed
-    final digits = _digitsCollection.getTime(
-        currentHour, newHour, currentMinute, newMinute, progress);
+    final digits = _digitsCollection.getTime(currentHour, newHour,
+        currentMinute, newMinute, currentSecond, newSecond, progress);
 
     for (var bar = 0; bar < Const.TOTAL_BAR_NUMBER; bar++) {
       final double barStartX = spaceWidth + bar * barWidth + bar * spaceWidth;

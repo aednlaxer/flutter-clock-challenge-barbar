@@ -9,7 +9,14 @@ import 'package:intl/intl.dart';
 import 'const/const.dart';
 import 'model/weather_icon.dart';
 
-enum _DigitsPosition { HourOld, MinuteOld, HourNew, MinuteNew }
+enum _DigitsPosition {
+  HourOld,
+  MinuteOld,
+  SecondOld,
+  HourNew,
+  MinuteNew,
+  SecondNew,
+}
 
 class DigitalClock extends StatefulWidget {
   const DigitalClock(this.model);
@@ -86,20 +93,20 @@ class _DigitalClockState extends State<DigitalClock>
       _dateTime = DateTime.now();
       // Update once per minute. If you want to update every second, use the
       // following code.
-      _timer = Timer(
-        const Duration(minutes: 1) -
-            Duration(seconds: _dateTime.second) -
-            Duration(milliseconds: _dateTime.millisecond),
-        _updateTime,
-      );
+      // _timer = Timer(
+      //   const Duration(minutes: 1) -
+      //       Duration(seconds: _dateTime.second) -
+      //       Duration(milliseconds: _dateTime.millisecond),
+      //   _updateTime,
+      // );
 
       // This part can be useful for testing
       // Update once per second, but make sure to do it at the beginning of each
       // new second, so that the clock is accurate.
-//      _timer = Timer(
-//        Duration(seconds: 1) - Duration(milliseconds: _dateTime.millisecond),
-//        _updateTime,
-//      );
+      _timer = Timer(
+        Duration(seconds: 1) - Duration(milliseconds: _dateTime.millisecond),
+        _updateTime,
+      );
 
       // Run digit change animation
       _animationController.reset();
@@ -123,6 +130,8 @@ class _DigitalClockState extends State<DigitalClock>
         currentMinute: hoursMinutes[_DigitsPosition.MinuteOld],
         newHour: hoursMinutes[_DigitsPosition.HourNew],
         newMinute: hoursMinutes[_DigitsPosition.MinuteNew],
+        currentSecond: hoursMinutes[_DigitsPosition.SecondOld],
+        newSecond: hoursMinutes[_DigitsPosition.SecondNew],
       ),
     );
   }
@@ -130,11 +139,14 @@ class _DigitalClockState extends State<DigitalClock>
   Map<_DigitsPosition, String> _getDisplayedAndPreviousTime(bool is24hFormat) {
     final hourFormat = DateFormat(is24hFormat ? 'HH' : 'hh');
     final minuteFormat = DateFormat('mm');
+    final secondFormat = DateFormat('ss');
     return {
       _DigitsPosition.HourOld: hourFormat.format(_previousDateTime),
       _DigitsPosition.MinuteOld: minuteFormat.format(_previousDateTime),
       _DigitsPosition.HourNew: hourFormat.format(_dateTime),
       _DigitsPosition.MinuteNew: minuteFormat.format(_dateTime),
+      _DigitsPosition.SecondOld: secondFormat.format(_previousDateTime),
+      _DigitsPosition.SecondNew: secondFormat.format(_dateTime),
     };
   }
 
