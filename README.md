@@ -1,5 +1,7 @@
 # BarBar Clock | [Web demo](https://barbar-clock.web.app/)
 
+🏆 **Listed in Honorable Mentions at [flutter.dev/clock](https://flutter.dev/clock)** 🏆
+
 Clock face for the [Flutter Clock Challenge](https://flutter.dev/clock).
 
 This clock face shows time using negative space. Top and bottom bars move when time changes. In addition, clock face displays weather conditions, temperature and current date:
@@ -10,4 +12,3 @@ Licenses:
 * Clock face: [BSD3](LICENSE)
 * Oswald font: [OFL](digital_clock/fonts/oswald/OFL.txt)
 * weather-icons-lite font: [OFL](digital_clock/fonts/weather-icons-lite/LICENCE.md)
-
